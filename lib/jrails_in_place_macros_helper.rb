@@ -26,6 +26,7 @@ module InPlaceMacrosHelper
   # <tt>textarea_rows</tt>::    number of rows textarea will have, if field_type is textarea; default: 10 
   # <tt>bg_over</tt>::          background color of editable elements on HOVER
   # <tt>bg_out</tt>::           background color of editable elements on RESTORE from hover 
+  # <tt>default_text</tt>::	text to be used when object is nil; default: '(Click here to add text)'
   # <tt>saving_text</tt>::      text to be used when server is saving information; default: 'Saving...''' 
   # <tt>saving_image</tt>::     specify an image location instead of text while server is saving; default: uses saving text 
   # <tt>value_required</tt>::   if set to true, the element will not be saved unless a value is entered
@@ -48,6 +49,7 @@ module InPlaceMacrosHelper
     js_options['textarea_rows'] = (options[:textarea_rows] || 10).to_i if options[:field_type].to_s == 'textarea'
     js_options['bg_over'] = "'" + options[:bg_over] + "'" if options[:bg_over]
     js_options['bg_out'] = "'" + options[:bg_out] + "'" if options[:bg_out]
+    js_options['default_text'] = "'" + options[:default_text] + "'" if options[:default_text] 
     js_options['saving_text'] = "'" + options[:saving_text] + "'" if options[:saving_text] 
     js_options['saving_image'] = "'" + options[:saving_image] + "'" if options[:saving_image]
     js_options['value_required'] = !!options[:value_required] if options[:value_required]
