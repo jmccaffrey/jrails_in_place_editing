@@ -75,6 +75,7 @@ jQuery.fn.editInPlace = function(options) {
 	var settings = {
 		url: "",
 		params: "",
+		method: "POST",
 		field_type: "text",
 		select_options: "",
 		textarea_cols:  "25",
@@ -275,7 +276,7 @@ jQuery.fn.editInPlace = function(options) {
 					} else {
 						jQuery.ajax({
 							url: settings.url,
-							type: "POST",
+							type: settings.method,
 							data: settings.update_value + '=' + new_html + '&' + settings.element_id + '=' + 
 									original_element.attr("id") + settings.params + 
 									'&' + settings.original_html + '=' + original_html,

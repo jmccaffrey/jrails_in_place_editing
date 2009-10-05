@@ -39,6 +39,7 @@ module InPlaceMacrosHelper
 
     js_options = {}
     js_options['url'] = "'" + (options[:url] || '') + "'"
+    js_options['method'] = "'" + options[:method].to_s.upcase + "'" if options[:method]
     if respond_to?(:protect_against_forgery?) && protect_against_forgery?
       js_options['params'] = "'#{request_forgery_protection_token}=' + encodeURIComponent('#{escape_javascript form_authenticity_token}')"
     end
@@ -54,7 +55,7 @@ module InPlaceMacrosHelper
     js_options['saving_text'] = "'" + options[:saving_text] + "'" if options[:saving_text] 
     js_options['saving_image'] = "'" + options[:saving_image] + "'" if options[:saving_image]
     js_options['value_required'] = !!options[:value_required] if options[:value_required]
-    js_options['update_value'] = "'value'"
+    js_options['update_value'] = "'" + (options[:update_value] || "value") + "'"
     js_options['save_button'] = options[:save_button] if options[:save_button]
     js_options['cancel_button'] = options[:cancel_button] if options[:cancel_button]
     js_options['callback'] = %{function() {#{options[:callback]}}} if options[:callback]
