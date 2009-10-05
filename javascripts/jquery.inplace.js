@@ -277,14 +277,14 @@ jQuery.fn.editInPlace = function(options) {
 						jQuery.ajax({
 							url: settings.url,
 							type: settings.method,
-							data: settings.update_value + '=' + new_html + '&' + settings.element_id + '=' + 
+							data: settings.update_value + '=' + encodeURIComponent(new_html) + '&' + settings.element_id + '=' + 
 									original_element.attr("id") + settings.params + 
 									'&' + settings.original_html + '=' + original_html,
 							dataType: "html",
 							complete: function(request){
 								editing = false;
 								click_count = 0;
-							},
+							},							
 							success: function(html){
 								// if the text returned by the server is empty, 
    							// put a marker as text in the original element
