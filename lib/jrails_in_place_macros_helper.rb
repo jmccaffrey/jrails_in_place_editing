@@ -59,6 +59,10 @@ module InPlaceMacrosHelper
     js_options['save_button'] = options[:save_button] if options[:save_button]
     js_options['cancel_button'] = options[:cancel_button] if options[:cancel_button]
     js_options['callback'] = %{function() {#{options[:callback]}}} if options[:callback]
+    js_options['cancel_callback'] = %{function() {#{options[:cancel_callback]}}} if options[:cancel_callback]
+    js_options['success_callback'] = %{function() {#{options[:success_callback]}}} if options[:success_callback]
+    js_options['error_callback'] = %{function() {#{options[:error_callback]}}} if options[:error_callback]
+    js_options['before_buttons'] = "'" + escape_javascript( options[:before_buttons]) +"'" if options[:before_buttons]
 
     function << options_for_javascript(js_options)
     function << ')'

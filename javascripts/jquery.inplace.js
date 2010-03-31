@@ -31,13 +31,13 @@
 /* $Id: jquery.inplace.js,v 0.9.9.2 2007/12/04 09:39:00 hauenstein Exp $ */
 
 /**
-  * jQuery inplace editor plugin.  
+  * jQuery inplace editor plugin.
   *
   * Created by: David Hauenstein
   * http://www.davehauenstein.com/blog/
   *
   *
-  * Nate Wiger (http://www.dangerrabbit.com) added callbacks, exposed 
+  * Nate Wiger (http://www.dangerrabbit.com) added callbacks, exposed
   * more settings, added required values and "selected" options,
   * and enabled compatibility with jQuery.noConflict() mode.
   * Thanks to Joe and Vaska for helping me get this working on jQuery 1.1
@@ -47,7 +47,7 @@
   *
   * @name  editInPlace
   * @type  jQuery
-  * @param Hash    options						additional options 
+  * @param Hash    options						additional options
   * @param String  options[url]					POST URL to send edited content
   * @param String  options[params]				paramters sent via the post request to the server; string; ex: name=dave&last_name=hauenstein
   * @param String  options[field_type]			can be: text, textarea, select; default: text
@@ -62,10 +62,14 @@
   * @param String  options[element_id]			name of parameter holding element_id; default: element_id
   * @param String  options[update_value]		name of parameter holding update_value; default: update_value
   * @param String  options[original_html]		name of parameter holding original_html; default: original_html
+  * @param String  options[before_buttons]		element to place before input buttons
   * @param String  options[save_button]			image button tag to use as "Save" button
   * @param String  options[cancel_button]		image button tag to use as "Cancel" button
   * @param String  options[callback]			call function instead of submitting to url
-  *             
+  * @param String  options[cancel_callback]     call function when escape key or cancel
+  * @param String  options[success_callback]    call function on success
+  * @param String  options[error_callback]      call function on error
+  *
   */
 
 jQuery.fn.editInPlace = function(options) {
@@ -92,10 +96,13 @@ jQuery.fn.editInPlace = function(options) {
 		update_value:  "update_value",
 		original_html: "original_html",
 		save_button:   '<input type="submit" class="inplace_save" value="Save"/>',
-		cancel_button: '<input type="submit" class="inplace_cancel" value="Cancel"/>',
+//		cancel_button: '<input type="submit" class="inplace_cancel" value="Cancel"/>',
+		cancel_button: '<a class="inplace_cancel">Cancel</a>',
 		callback: null,
-		success: null,
-		error: function(request){
+		cancel_callback: null,
+        before_buttons: null,
+		success_callback: null,
+		error_callback: function(request){
 			alert("Failed to save value: " + request.responseText || 'Unspecified Error');
 		}
 	};
@@ -159,7 +166,11 @@ jQuery.fn.editInPlace = function(options) {
 
 				//save original text - for cancellation functionality
 				var original_html = jQuery(this).html();
-				var buttons_code  = settings.save_button + ' ' + settings.cancel_button;
+				var buttons_code  = '';
+                if(settings.before_buttons) {
+                  buttons_code  += settings.before_buttons
+                }
+                buttons_code += settings.save_button + ' ' + settings.cancel_button;
 
 				//if html is our default text, clear it out to prevent saving accidentally
 				if (original_html == settings.default_text) jQuery(this).html('');
@@ -178,13 +189,13 @@ jQuery.fn.editInPlace = function(options) {
 				else if(settings.field_type == "select")
 				{
 					var optionsArray = settings.select_options.split(',');
-					var use_field_type = '<select name="inplace_value" class="inplace_field"><option value="">' + 
+					var use_field_type = '<select name="inplace_value" class="inplace_field"><option value="">' +
 																settings.select_text + '</option>';
 						for(var i=0; i<optionsArray.length; i++){
 							var optionsValuesArray = optionsArray[i].split(':');
 							var use_value = optionsValuesArray[1] || optionsValuesArray[0];
 							var selected = use_value == original_html ? 'selected="selected" ' : '';
-							use_field_type += '<option ' + selected + 'value="' + use_value.trim().escape_html() + '">' + 
+							use_field_type += '<option ' + selected + 'value="' + use_value.trim().escape_html() + '">' +
 												optionsValuesArray[0].trim().escape_html() + '</option>';
                         }
 						use_field_type += '</select>';
@@ -193,10 +204,10 @@ jQuery.fn.editInPlace = function(options) {
 				//insert the new in place form after the element they click, then empty out the original element
 				jQuery(this).html('<form class="inplace_form" style="display: inline; margin: 0; padding: 0;">' +
 									use_field_type + ' ' + buttons_code + '</form>');
-									
+
 				if (settings.datepicker == "datepicker"){
-	    			$('#inplace_field').datepicker({ yearRange: '1900:2007', dateFormat: "MM d, yy", defaultDate: new Date(1980, 1 - 1, 1) });
-				}				
+	    			$('#inplace_field').datepicker({yearRange: '1900:2007', dateFormat: "MM d, yy", defaultDate: new Date(1980, 1 - 1, 1)});
+				}
 
 			}//END- if(!editing) -END
 
@@ -216,6 +227,10 @@ jQuery.fn.editInPlace = function(options) {
 
 						//put back the original text
 						original_element.html(original_html);
+                        var new_html = jQuery(this).parent().children(0).val();
+                        if (settings.cancel_callback){
+                          settings.cancel_callback(original_element.attr("id"), new_html, original_html, settings.params);
+                        }
 
 						return false;
 				    }
@@ -231,6 +246,10 @@ jQuery.fn.editInPlace = function(options) {
 
 					//put back the original text
 					original_element.html(original_html);
+                    var new_html = jQuery(this).parent().children(0).val();
+                    if (settings.cancel_callback){
+                      settings.cancel_callback(original_element.attr("id"), new_html, original_html, settings.params);
+                    }
 
 					return false;
 				});
@@ -241,7 +260,7 @@ jQuery.fn.editInPlace = function(options) {
 					original_element.css("background", settings.bg_out);
 
 					var new_html = jQuery(this).parent().children(0).val();
-				
+
 					//set saving message
 					if(settings.saving_image != ""){
 						var saving_message = '<img src="' + settings.saving_image + '" alt="Saving..." />';
@@ -277,26 +296,26 @@ jQuery.fn.editInPlace = function(options) {
 						jQuery.ajax({
 							url: settings.url,
 							type: settings.method,
-							data: settings.update_value + '=' + encodeURIComponent(new_html) + '&' + settings.element_id + '=' + 
-									original_element.attr("id") + settings.params + 
+							data: settings.update_value + '=' + encodeURIComponent(new_html) + '&' + settings.element_id + '=' +
+									original_element.attr("id") + settings.params +
 									'&' + settings.original_html + '=' + original_html,
 							dataType: "html",
 							complete: function(request){
 								editing = false;
 								click_count = 0;
-							},							
+							},
 							success: function(html){
-								// if the text returned by the server is empty, 
+								// if the text returned by the server is empty,
    							// put a marker as text in the original element
 								var new_text = html || settings.default_text;
 
 								// put the newly updated info into the original element
 								original_element.html(new_text);
-								if (settings.success) settings.success(html, original_element);
+								if (settings.success_callback) settings.success_callback(html, original_element);
 							},
 							error: function(request) {
 								original_element.html(original_html);
-								if (settings.error) settings.error(request, original_element);
+								if (settings.error_callback) settings.error_callback(request, original_element);
 							}
 						});
 					}
